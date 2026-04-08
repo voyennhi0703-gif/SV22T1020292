@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SV22T1020292.Models.Partner
 {
     /// <summary>
@@ -12,10 +14,14 @@ namespace SV22T1020292.Models.Partner
         /// <summary>
         /// Tên khách hàng
         /// </summary>
+        [Display(Name = "Tên khách hàng")]
+        [Required(ErrorMessage = "Tên khách hàng không được để trống.")]
         public string CustomerName { get; set; } = string.Empty;
         /// <summary>
         /// Tên giao dịch
         /// </summary>
+        [Display(Name = "Tên giao dịch")]
+        [Required(ErrorMessage = "Tên giao dịch không được để trống.")]
         public string ContactName { get; set; } = string.Empty;
         /// <summary>
         /// Tỉnh/thành
@@ -32,6 +38,9 @@ namespace SV22T1020292.Models.Partner
         /// <summary>
         /// Email
         /// </summary>
+        [Display(Name = "Email")]
+        [Required(ErrorMessage = "Email không được để trống.")]
+        [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
         public string Email { get; set; } = string.Empty;
         /// <summary>
         /// Mật khẩu

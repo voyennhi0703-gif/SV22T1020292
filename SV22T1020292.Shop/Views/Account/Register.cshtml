@@ -26,32 +26,27 @@
             <div class="form-grid">
                 <div class="field">
                     <label for="customerName">Tên khách hàng <span class="text-danger">*</span></label>
-                    <input type="text" id="customerName" name="customerName" placeholder="VD: Nguyễn Thị Lan Anh" required />
-                    @Html.ValidationMessage("customerName", new { @class = "text-danger" })
+                    <input type="text" id="customerName" name="customerName" value="@ViewBag.CustomerName" placeholder="VD: Nguyễn Thị Lan Anh" required />
                 </div>
                 <div class="field">
                     <label for="contactName">Tên giao dịch <span class="text-danger">*</span></label>
-                    <input type="text" id="contactName" name="contactName" placeholder="VD: Shop ABC" required />
-                    @Html.ValidationMessage("contactName", new { @class = "text-danger" })
+                    <input type="text" id="contactName" name="contactName" value="@ViewBag.ContactName" placeholder="VD: Shop ABC" required />
                 </div>
                 <div class="field form-full">
                     <label for="email">Email <span class="text-danger">*</span></label>
-                    <input type="email" id="email" name="email" placeholder="email@example.com" required />
-                    @Html.ValidationMessage("email", new { @class = "text-danger" })
+                    <input type="email" id="email" name="email" value="@ViewBag.Email" placeholder="email@example.com" required />
                 </div>
                 <div class="field">
                     <label for="password">Mật khẩu <span class="text-danger">*</span></label>
                     <input type="password" id="password" name="password" placeholder="Tối thiểu 6 ký tự" required minlength="6" />
-                    @Html.ValidationMessage("password", new { @class = "text-danger" })
                 </div>
                 <div class="field">
                     <label for="confirmPassword">Xác nhận mật khẩu <span class="text-danger">*</span></label>
                     <input type="password" id="confirmPassword" name="confirmPassword" required />
-                    @Html.ValidationMessage("confirmPassword", new { @class = "text-danger" })
                 </div>
                 <div class="field">
                     <label for="phone">Điện thoại</label>
-                    <input type="text" id="phone" name="phone" placeholder="0xxx xxx xxx" />
+                    <input type="text" id="phone" name="phone" value="@ViewBag.Phone" placeholder="0xxx xxx xxx" />
                 </div>
                 <div class="field">
                     <label for="province">Tỉnh / Thành</label>
@@ -61,20 +56,22 @@
                         {
                             foreach (var p in provinces)
                             {
-                                <option value="@p.ProvinceName">@p.ProvinceName</option>
+                                <option value="@p.ProvinceName" selected="@(p.ProvinceName == ViewBag.SelectedProvince ? "selected" : null)">@p.ProvinceName</option>
                             }
                         }
                     </select>
                 </div>
                 <div class="field form-full">
                     <label for="address">Địa chỉ</label>
-                    <input type="text" id="address" name="address" placeholder="Số nhà, đường..." />
+                    <input type="text" id="address" name="address" value="@ViewBag.Address" placeholder="Số nhà, đường..." />
                 </div>
             </div>
 
-            @if (ViewData.ModelState.ErrorCount > 0)
+            @if (!ViewData.ModelState.IsValid)
             {
-                <div class="shopvn-alert danger">@Html.ValidationSummary(false)</div>
+                <div class="shopvn-alert danger" role="alert" style="margin-top:14px;">
+                    Đăng ký thất bại. Vui lòng kiểm tra lại thông tin đã nhập.
+                </div>
             }
 
             <button type="submit" class="btn btn-gold btn-full" style="margin-top:16px;">Tạo tài khoản</button>

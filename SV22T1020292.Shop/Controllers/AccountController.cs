@@ -151,6 +151,12 @@ public class AccountController : Controller
         {
             var provinces = await CatalogDataService.ListProvincesAsync();
             ViewBag.Provinces = provinces;
+            ViewBag.CustomerName = customerName;
+            ViewBag.ContactName = contactName;
+            ViewBag.Email = email;
+            ViewBag.Phone = phone;
+            ViewBag.Address = address;
+            ViewBag.SelectedProvince = province;
             return View();
         }
 
@@ -162,10 +168,16 @@ public class AccountController : Controller
             ModelState.AddModelError("email", "Email này đã được sử dụng bởi một tài khoản khác.");
             var provinces = await CatalogDataService.ListProvincesAsync();
             ViewBag.Provinces = provinces;
+            ViewBag.CustomerName = customerName;
+            ViewBag.ContactName = contactName;
+            ViewBag.Email = email;
+            ViewBag.Phone = phone;
+            ViewBag.Address = address;
+            ViewBag.SelectedProvince = province;
             return View();
         }
 
-        TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+        TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập lại để truy cập.";
         return RedirectToAction("Login");
     }
 
@@ -211,11 +223,6 @@ public class AccountController : Controller
         if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out var customerId))
             return RedirectToAction("Login");
 
-        if (string.IsNullOrWhiteSpace(model.CustomerName))
-            ModelState.AddModelError("CustomerName", "Vui lòng nhập tên khách hàng.");
-        if (string.IsNullOrWhiteSpace(model.Email))
-            ModelState.AddModelError("Email", "Vui lòng nhập email.");
-
         if (!ModelState.IsValid)
         {
             var provinces = await CatalogDataService.ListProvincesAsync();
@@ -224,6 +231,11 @@ public class AccountController : Controller
         }
 
         model.CustomerID = customerId;
+        var existing = await CustomerAccountService.GetCustomerAsync(customerId);
+        if (existing == null)
+            return RedirectToAction("Login");
+        model.IsLocked = existing.IsLocked;
+
         var ok = await CustomerAccountService.UpdateCustomerAsync(model);
         if (!ok)
         {

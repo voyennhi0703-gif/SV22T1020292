@@ -45,16 +45,14 @@
                 <div class="field">
                     <label for="customerName">Tên khách hàng <span class="text-danger">*</span></label>
                     <input type="text" id="customerName" name="CustomerName" value="@Model.CustomerName" required />
-                    @Html.ValidationMessage("CustomerName", new { @class = "text-danger" })
                 </div>
                 <div class="field">
-                    <label for="contactName">Tên giao dịch</label>
-                    <input type="text" id="contactName" name="ContactName" value="@Model.ContactName" />
+                    <label for="contactName">Tên giao dịch <span class="text-danger">*</span></label>
+                    <input type="text" id="contactName" name="ContactName" value="@Model.ContactName" required />
                 </div>
                 <div class="field">
                     <label for="email">Email <span class="text-danger">*</span></label>
                     <input type="email" id="email" name="Email" value="@Model.Email" required />
-                    @Html.ValidationMessage("Email", new { @class = "text-danger" })
                 </div>
                 <div class="field">
                     <label for="phone">Điện thoại</label>
@@ -86,9 +84,11 @@
                 </div>
             </div>
 
-            @if (ViewData.ModelState.ErrorCount > 0)
+            @if (!ViewData.ModelState.IsValid)
             {
-                <div class="shopvn-alert danger">@Html.ValidationSummary(false)</div>
+                <div class="shopvn-alert danger" role="alert" style="margin-top:14px;">
+                    Cập nhật thông tin thất bại. Vui lòng kiểm tra lại thông tin đã nhập.
+                </div>
             }
 
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">

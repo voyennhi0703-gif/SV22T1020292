@@ -96,6 +96,13 @@
                 </div>
                 <div class="field-error" id="password-error" aria-live="polite"></div>
             </div>
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="login-error" style="background:rgba(76,175,80,.10);border-color:rgba(76,175,80,.3);color:#2e7d32;">
+                    <span>✓</span>
+                    <span>@TempData["SuccessMessage"]</span>
+                </div>
+            }
             @if (ViewData.ModelState.ErrorCount > 0)
             {
                 <div class="login-error">

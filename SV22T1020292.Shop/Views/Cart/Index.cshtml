@@ -1,0 +1,100 @@
+@model List<OrderDetailViewInfo>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Giỏ hàng";
+    var boxPlaceholder = Url.Content("~/images/shop/placeholder-box.svg");
+    var total = Model.Sum(m => m.Quantity * m.SalePrice);
+    var qtyTotal = Model.Sum(m => m.Quantity);
+    var shipping = total >= 500000m ? 0m : 30000m;
+}
+
+<div class="page-hd">
+    <div class="breadcrumb">
+        <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+        <span>›</span>
+        <span>Giỏ hàng</span>
+    </div>
+    <h2>Giỏ hàng của bạn</h2>
+    <p>@qtyTotal sản phẩm</p>
+</div>
+
+<div class="cart-layout">
+    <div class="shopvn-card">
+        @if (!Model.Any())
+        {
+            <div class="empty">
+                <div class="empty-icon">🛍</div>
+                <h3>Giỏ hàng trống</h3>
+                <p>Thêm sản phẩm để bắt đầu mua sắm</p>
+                <a asp-controller="Product" asp-action="Index" class="btn btn-gold">Mua sắm ngay →</a>
+            </div>
+        }
+        else
+        {
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:flex-end;">
+                <form asp-action="Clear" method="post" onsubmit="return confirm('Xóa toàn bộ giỏ hàng?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-danger-outline">✕ Xóa tất cả</button>
+                </form>
+            </div>
+            @foreach (var item in Model)
+            {
+                <div class="cart-item">
+                    <div class="cart-item-img">
+                        <img src="@boxPlaceholder" alt="" style="width:100%;height:100%;object-fit:contain;" />
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="cart-item-brand">@item.Unit</div>
+                        <div class="cart-item-name">
+                            <a asp-controller="Product" asp-action="Detail" asp-route-id="@item.ProductID">@item.ProductName</a>
+                        </div>
+                        <div class="cart-item-price">@item.SalePrice.ToString("N0")₫</div>
+                    </div>
+                    <div class="cart-item-right">
+                        <form asp-action="Remove" method="post" style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="productId" value="@item.ProductID" />
+                            <button type="submit" class="rm-btn" title="Xóa">✕</button>
+                        </form>
+                        <form asp-action="Update" method="post" style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="productId" value="@item.ProductID" />
+                            <div class="qty-ctrl">
+                                @if (item.Quantity > 1)
+                                {
+                                    <button type="submit" name="quantity" value="@(item.Quantity - 1)">−</button>
+                                }
+                                else
+                                {
+                                    <button type="button" disabled style="opacity:.35;cursor:not-allowed;">−</button>
+                                }
+                                <span>@item.Quantity</span>
+                                <button type="submit" name="quantity" value="@(item.Quantity + 1)">+</button>
+                            </div>
+                        </form>
+                        <div class="cart-item-price">@((item.Quantity * item.SalePrice).ToString("N0"))₫</div>
+                    </div>
+                </div>
+            }
+            <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                <a asp-controller="Product" asp-action="Index" class="btn btn-outline btn-sm">← Tiếp tục mua sắm</a>
+            </div>
+        }
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="summary-box">
+            <h3>Tổng đơn hàng</h3>
+            <div class="sum-row"><span class="text2">Tạm tính</span><span>@total.ToString("N0")₫</span></div>
+            <div class="sum-row"><span class="text2">Phí vận chuyển</span><span>@(shipping == 0 ? "Miễn phí" : shipping.ToString("N0") + "₫")</span></div>
+            <div class="coupon-wrap">
+                <input type="text" placeholder="Nhập mã giảm giá..." style="flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;font-family:var(--font-body);font-size:13px;color:var(--text);outline:none;" />
+                <button type="button" onclick="window.alert('Tính năng mã giảm giá đang được phát triển (demo).')" style="background:var(--rose-dim);border:1.5px solid var(--rose-soft);color:var(--rose);padding:10px 15px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;font-weight:700;white-space:nowrap;">Áp dụng</button>
+            </div>
+            <div class="sum-row total"><span>Tổng cộng</span><span>@((total + shipping).ToString("N0"))₫</span></div>
+            <a asp-controller="Order" asp-action="Checkout" class="btn btn-gold btn-full" style="margin-top:18px;">Thanh toán →</a>
+            <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text3);">🔒 Thanh toán an toàn & bảo mật</div>
+        </div>
+    }
+</div>

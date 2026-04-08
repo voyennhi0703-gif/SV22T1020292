@@ -1,0 +1,206 @@
+@using System.Security.Claims
+@using SV22T1020292.Shop.Models
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | BloomShop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/shopvn.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="shopvn-body">
+<div class="shopvn-app">
+    <div class="shopvn-announce">
+        ✿ &nbsp; MIỄN PHÍ VẬN CHUYỂN ĐƠN HÀNG TỪ 500K &nbsp; ✿ &nbsp; ĐỔI TRẢ 30 NGÀY — GIAO HÀNG TOÀN QUỐC &nbsp; ✿ &nbsp; GIẢM 15% MÃ: WELCOME15 &nbsp; ✿
+    </div>
+
+    <header class="shopvn-header">
+        <button type="button" class="mobile-nav-toggle" id="shopvnSearchToggle" aria-label="Tìm kiếm">⌕</button>
+        <a class="shopvn-logo" asp-controller="Home" asp-action="Index">BloomShop</a>
+
+        <form class="shopvn-search-wrap" id="shopvnHeaderSearch" method="get" asp-controller="Product" asp-action="Index">
+            <input type="search" name="searchValue" value="@Context.Request.Query["searchValue"]"
+                   placeholder="Tìm kiếm sản phẩm, thương hiệu..." autocomplete="off" />
+            <button type="submit" aria-label="Tìm">⌕</button>
+        </form>
+
+        <div class="shopvn-header-right">
+            <a class="h-btn h-btn-cart" asp-controller="Cart" asp-action="Index" title="Giỏ hàng" aria-label="Giỏ hàng">
+                🛍
+                @if (CartBadgeCount > 0)
+                {
+                    <span class="dot" id="cartBadge">@CartBadgeCount</span>
+                }
+                else
+                {
+                    <span class="dot hidden" id="cartBadge">0</span>
+                }
+            </a>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                var display = User.FindFirst("DisplayName")?.Value ?? User.Identity?.Name ?? "Tài khoản";
+                var initials = string.Concat(display.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => char.ToUpper(s[0])));
+                if (string.IsNullOrEmpty(initials)) { initials = "?"; }
+                <div class="user-chip-wrap">
+                    <button type="button" class="user-chip" id="userChipToggle" aria-expanded="false">
+                        <span class="user-avatar">@initials</span>
+                        <span>@display.Split(' ').LastOrDefault()</span>
+                        <span class="text2" style="font-size:10px;">▾</span>
+                    </button>
+                    <div class="shopvn-dropdown" id="userDropdown" role="menu">
+                        <div class="dd-header">@display</div>
+                        <a class="dd-item" asp-controller="Account" asp-action="Profile" role="menuitem">◈ Thông tin cá nhân</a>
+                        <a class="dd-item" asp-controller="Order" asp-action="MyOrders" role="menuitem">◧ Đơn hàng</a>
+                        <a class="dd-item" asp-controller="Order" asp-action="PurchaseHistory" role="menuitem">◇ Lịch sử mua hàng</a>
+                        <div class="dd-sep"></div>
+                        <a class="dd-item danger" asp-controller="Account" asp-action="Logout" role="menuitem">⊗ Đăng xuất</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a class="btn-login" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Đăng nhập</a>
+            }
+        </div>
+    </header>
+
+    <nav class="nav">
+        <a class="nav-link @(
+            ViewContext.RouteData.Values["controller"]?.ToString() == "Product"
+                && string.IsNullOrEmpty(Context.Request.Query["categoryID"].ToString())
+                ? "active" : null)"
+            asp-controller="Product" asp-action="Index">Tất cả</a>
+        @foreach (var c in NavCategories)
+        {
+            <a class="nav-link @(
+                Context.Request.Query["categoryID"].ToString() == c.CategoryID.ToString()
+                    ? "active" : null)"
+                asp-controller="Product" asp-action="Index"
+                asp-route-categoryID="@c.CategoryID">@c.CategoryName</a>
+        }
+    </nav>
+
+    <main class="shopvn-main">
+        @if (TempData["SuccessMessage"] is string successMsg && !string.IsNullOrWhiteSpace(successMsg))
+        {
+            <div class="section" style="padding-bottom:0;padding-top:20px;">
+                <div class="shopvn-alert success">@successMsg</div>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] is string errMsg && !string.IsNullOrWhiteSpace(errMsg))
+        {
+            <div class="section" style="padding-bottom:0;padding-top:20px;">
+                <div class="shopvn-alert danger">@errMsg</div>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="shopvn-footer">
+        <div class="footer-grid">
+            <div>
+                <div class="footer-brand-name">BloomShop</div>
+                <p class="footer-desc">Siêu thị trực tuyến đa dạng mặt hàng — nội thất, điện tử, thời trang, đồ chơi và hàng gia dụng. Mua sắm thông minh, tiết kiệm hơn.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Mua sắm</h4>
+                <ul>
+                    <li><a asp-controller="Product" asp-action="Index">Tất cả sản phẩm</a></li>
+                    <li><a asp-controller="Cart" asp-action="Index">Giỏ hàng</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Hỗ trợ</h4>
+                <ul>
+                    <li><a asp-controller="Order" asp-action="Track">Theo dõi đơn hàng</a></li>
+                    <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Tài khoản</h4>
+                <ul>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li><a asp-controller="Account" asp-action="Profile">Hồ sơ</a></li>
+                        <li><a asp-controller="Order" asp-action="MyOrders">Đơn hàng</a></li>
+                        <li><a asp-controller="Order" asp-action="PurchaseHistory">Lịch sử mua hàng</a></li>
+                        <li><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></li>
+                    }
+                    else
+                    {
+                        <li><a asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
+                        <li><a asp-controller="Account" asp-action="Register">Đăng ký</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© @DateTime.Now.Year BloomShop. Bảo lưu mọi quyền.</span>
+            <span>Hotline: 1900-1234 &nbsp;|&nbsp; Thứ 2 – CN, 8:00–22:00</span>
+        </div>
+    </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+
+<script>
+(function () {
+    var chip = document.getElementById('userChipToggle');
+    var dd = document.getElementById('userDropdown');
+    if (chip && dd) {
+        chip.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = dd.classList.toggle('show');
+            chip.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', function () {
+            dd.classList.remove('show');
+            chip.setAttribute('aria-expanded', 'false');
+        });
+    }
+
+    var searchToggle = document.getElementById('shopvnSearchToggle');
+    var searchForm = document.getElementById('shopvnHeaderSearch');
+    if (searchToggle && searchForm) {
+        searchToggle.addEventListener('click', function () {
+            searchForm.classList.toggle('is-open');
+            var inp = searchForm.querySelector('input');
+            if (searchForm.classList.contains('is-open') && inp) inp.focus();
+        });
+    }
+
+    // Toast helper
+    window.showToast = function(msg, type) {
+        var el = document.getElementById('toast');
+        if (!el) return;
+        el.textContent = msg;
+        el.className = 'toast show' + (type ? ' ' + type : '');
+        clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(function() { el.classList.remove('show'); }, 3000);
+    };
+})();
+</script>
+</body>
+</html>
+
+@functions {
+    private int CartBadgeCount => ShoppingCartService.GetCartItemCount();
+    private IEnumerable<SV22T1020292.Models.Catalog.Category> NavCategories
+    {
+        get
+        {
+            var task = CatalogDataService.ListCategoriesAsync();
+            task.Wait();
+            return task.Result;
+        }
+    }
+}

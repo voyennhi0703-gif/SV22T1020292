@@ -1,0 +1,29 @@
+@model SV22T1020292.Models.Sales.OrderViewInfo
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+<div class="success-wrap">
+    <div class="success-icon">✿</div>
+    <div class="success-title">Đặt hàng thành công!</div>
+    <div class="success-sub">Cảm ơn bạn đã tin tưởng BloomShop.</div>
+    <div class="success-id">Mã đơn hàng: <span class="gold">#@Model.OrderID</span></div>
+
+    <div class="shopvn-card" style="max-width:440px;margin:0 auto 24px;text-align:left;">
+        <table class="table-shopvn">
+            <tr><th>Ngày đặt</th><td>@Model.OrderTime.ToString("dd/MM/yyyy HH:mm")</td></tr>
+            <tr><th>Tổng tiền</th><td class="gold" style="font-weight:600;">@Model.TotalAmount.ToString("N0")₫</td></tr>
+            <tr><th>Trạng thái</th><td>@Model.StatusDescription</td></tr>
+            @if (!string.IsNullOrWhiteSpace(Model.DeliveryProvince))
+            {
+                <tr><th>Giao đến</th><td>@Model.DeliveryAddress, @Model.DeliveryProvince</td></tr>
+            }
+        </table>
+    </div>
+
+    <div class="success-actions">
+        <a asp-action="MyOrders" class="btn btn-gold">Theo dõi đơn hàng</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline">Về trang chủ</a>
+    </div>
+</div>

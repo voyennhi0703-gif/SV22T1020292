@@ -1,0 +1,194 @@
+@model PagedResult<Product>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Sản phẩm";
+    var cats = ViewBag.Categories as IEnumerable<Category> ?? Enumerable.Empty<Category>();
+    var suppliers = ViewBag.Suppliers as IEnumerable<Supplier> ?? Enumerable.Empty<Supplier>();
+    var products = Model?.DataItems?.ToList() ?? new List<Product>();
+    var boxPlaceholder = Url.Content("~/images/shop/placeholder-box.svg");
+    var totalProducts = Model?.RowCount ?? 0;
+}
+
+<div class="page-hd">
+    <div class="breadcrumb">
+        <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+        <span>›</span>
+        <span>Sản phẩm</span>
+    </div>
+    <div class="section-title product-page-title">Sản phẩm</div>
+    <p class="section-sub product-page-sub">Tìm kiếm và lọc theo loại, nhà cung cấp, khoảng giá</p>
+</div>
+
+<div class="section" style="padding-top:0;">
+<form asp-action="Index" method="get" id="filterForm">
+    <input type="hidden" name="page" value="1" id="pageField" />
+    <div class="filter-bar">
+        <input type="search" name="searchValue" value="@ViewBag.SearchValue"
+               placeholder="Tên sản phẩm, mô tả..." />
+        <select name="categoryID">
+            @if (ViewBag.CategoryID == null)
+            {
+                <option value="" selected>— Tất cả loại —</option>
+            }
+            else
+            {
+                <option value="">— Tất cả loại —</option>
+            }
+            @foreach (var c in cats)
+            {
+                if (ViewBag.CategoryID?.ToString() == c.CategoryID.ToString())
+                {
+                    <option value="@c.CategoryID" selected>@c.CategoryName</option>
+                }
+                else
+                {
+                    <option value="@c.CategoryID">@c.CategoryName</option>
+                }
+            }
+        </select>
+        <select name="supplierID">
+            @if (ViewBag.SupplierID == null)
+            {
+                <option value="" selected>— Nhà cung cấp —</option>
+            }
+            else
+            {
+                <option value="">— Nhà cung cấp —</option>
+            }
+            @foreach (var s in suppliers)
+            {
+                if (ViewBag.SupplierID?.ToString() == s.SupplierID.ToString())
+                {
+                    <option value="@s.SupplierID" selected>@s.SupplierName</option>
+                }
+                else
+                {
+                    <option value="@s.SupplierID">@s.SupplierName</option>
+                }
+            }
+        </select>
+        <input type="number" name="minPrice" value="@ViewBag.MinPrice"
+               placeholder="Giá từ" min="0" step="1000" style="max-width:120px;" />
+        <input type="number" name="maxPrice" value="@ViewBag.MaxPrice"
+               placeholder="Giá đến" min="0" step="1000" style="max-width:120px;" />
+        <button type="submit" class="btn btn-gold btn-sm">Tìm kiếm</button>
+        <a asp-action="Index" class="btn btn-ghost btn-sm">↺ Xóa lọc</a>
+    </div>
+</form>
+
+<p class="result-count">
+    Tìm thấy <strong class="gold">@totalProducts</strong> sản phẩm
+    — Trang @(Model?.Page ?? 1)/@(Model?.PageCount ?? 1)
+</p>
+
+@if (!products.Any())
+{
+    <div class="empty">
+        <div class="empty-icon"><img src="@boxPlaceholder" alt="" style="width:64px;height:64px;object-fit:contain;" /></div>
+        <h3>Không tìm thấy sản phẩm</h3>
+        <p>Thử đổi từ khóa hoặc bỏ lọc.</p>
+        <a asp-action="Index" class="btn btn-gold">Xem tất cả</a>
+    </div>
+}
+else
+{
+    <div class="prod-grid">
+        @foreach (var p in products)
+        {
+            <div class="prod-card">
+                <a asp-action="Detail" asp-route-id="@p.ProductID" class="prod-img">
+                    <img src="@boxPlaceholder" alt="" loading="lazy" decoding="async" />
+                </a>
+                <div class="prod-body">
+                    <div class="prod-brand">@p.Unit</div>
+                    <a asp-action="Detail" asp-route-id="@p.ProductID" class="prod-name">@p.ProductName</a>
+                    <div class="prod-price">
+                        <span class="new">@p.Price.ToString("N0") đ</span>
+                    </div>
+                    @if (p.IsSelling)
+                    {
+                        <button type="button" class="btn-addcart" onclick="addToCart(@p.ProductID)">+ Thêm vào giỏ</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn-addcart" disabled style="opacity:0.5;cursor:not-allowed;">Ngừng bán</button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if ((Model?.PageCount ?? 0) > 1)
+{
+    var pages = Model!.GetDisplayPages(3);
+    <nav class="shopvn-pagination" aria-label="Phân trang">
+        @if (Model.HasPreviousPage)
+        {
+            <a href="javascript:goPage(@(Model.Page - 1))" rel="prev">‹</a>
+        }
+        else
+        {
+            <span class="disabled">‹</span>
+        }
+        @foreach (var pi in pages)
+        {
+            if (pi.IsEllipsis)
+            {
+                <span>…</span>
+            }
+            else if (pi.IsCurrent)
+            {
+                <span class="current">@pi.Page</span>
+            }
+            else
+            {
+                <a href="javascript:goPage(@pi.Page)">@pi.Page</a>
+            }
+        }
+        @if (Model.HasNextPage)
+        {
+            <a href="javascript:goPage(@(Model.Page + 1))" rel="next">›</a>
+        }
+        else
+        {
+            <span class="disabled">›</span>
+        }
+    </nav>
+}
+</div>
+
+@section Scripts {
+<script>
+    function goPage(p) {
+        document.getElementById('pageField').value = p;
+        document.getElementById('filterForm').submit();
+    }
+    function addToCart(productId, quantity) {
+        if (!quantity) quantity = 1;
+        fetch('@Url.Action("AddToCart", "Cart")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'productID=' + productId + '&quantity=' + quantity
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                var badge = document.getElementById('cartBadge');
+                if (badge) {
+                    badge.textContent = data.count;
+                    badge.classList.toggle('hidden', data.count === 0);
+                }
+                if (window.showToast) {
+                    showToast('Đã thêm vào giỏ hàng ✦', 'ok');
+                } else {
+                    alert('Đã thêm vào giỏ hàng!');
+                }
+            } else {
+                alert(data.message || 'Có lỗi xảy ra.');
+            }
+        })
+        .catch(() => alert('Có lỗi kết nối.'));
+    }
+</script>
+}

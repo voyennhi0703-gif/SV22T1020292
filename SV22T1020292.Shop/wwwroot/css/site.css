@@ -1,0 +1,212 @@
+/* ══════════════════════════════════════════════════════════════════
+   LAYOUT: Sidebar cố định bên trái (không nhảy, không giật)
+══════════════════════════════════════════════════════════════════ */
+
+/* ── BASE ────────────────────────────────────────────────────── */
+html { font-size: 14px; position: relative; min-height: 100vh; }
+body { margin: 0; }
+
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 220px; height: 100vh;
+  background: #0d6efd;        /* Bootstrap primary */
+  display: flex; flex-direction: column;
+  z-index: 1040;
+  overflow: hidden;
+  /* Luôn hiển thị trên desktop */
+}
+
+/* Logo header trong sidebar */
+.sidebar-logo {
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  min-height: 60px;
+  display: flex; align-items: center;
+}
+
+/* Nav bên trong sidebar */
+.sidebar-nav { flex: 1; overflow-y: auto; padding-bottom: 1rem; }
+
+/* Nhãn phân nhóm menu */
+.sidebar-section-label {
+  padding: 0.5rem 1rem 0.25rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.45);
+  font-weight: 700;
+}
+
+/* Từng mục menu */
+.sidebar-item { padding: 0 0.5rem; }
+.sidebar-link {
+  display: flex; align-items: center;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 2px;
+}
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+.sidebar-link.active {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Dấu gạch ngang phân cách */
+.sidebar-divider {
+  border-top: 1px solid rgba(255,255,255,0.12);
+  margin: 0.5rem 0.75rem;
+}
+
+/* Thông tin user ở cuối sidebar */
+.sidebar-user {
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding: 0.75rem 0;
+  background: rgba(0,0,0,0.12);
+  min-height: 56px;
+  display: flex; align-items: center;
+}
+
+/* ── MAIN WRAPPER (nội dung bên phải sidebar) ───────────────── */
+.main-wrapper {
+  margin-left: 220px;      /* = sidebar width */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f0f2f5;    /* Nền xám nhạt cho toàn bộ trang */
+}
+
+/* ── TOPBAR ──────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0;
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0 1.5rem;
+  display: flex; align-items: center;
+  z-index: 1020;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.topbar-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+/* ── PAGE CONTENT ─────────────────────────────────────────────── */
+.page-content {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 100%;
+}
+
+/* ── PAGE FOOTER ─────────────────────────────────────────────── */
+.page-footer {
+  border-top: 1px solid #dee2e6;
+  background: #fff;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── TOGGLE BUTTON (chỉ hiện trên mobile) ───────────────────── */
+.sidebar-toggle {
+  display: none;           /* ẩn mặc định */
+  position: fixed;
+  top: 0.75rem; left: 0.75rem;
+  z-index: 1050;
+  width: 40px; height: 40px;
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  align-items: center; justify-content: center;
+}
+
+/* ── MOBILE OVERLAY ─────────────────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1039;
+}
+
+/* ── RESPONSIVE: mobile (< lg) ───────────────────────────────── */
+@media (max-width: 991.98px) {
+  /* Sidebar ẩn mặc định trên mobile */
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+  }
+
+  /* Toggle button hiện */
+  .sidebar-toggle { display: flex; }
+
+  /* Overlay hiện khi sidebar mở */
+  .sidebar-overlay.show { display: block; }
+
+  /* Main wrapper chiếm toàn bộ width */
+  .main-wrapper { margin-left: 0; }
+
+  /* Topbar dịch phải để nhường chỗ cho toggle */
+  .topbar { padding-left: 3.5rem; }
+}
+
+/* ── FOCUS STYLES ────────────────────────────────────────────── */
+.btn:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* ── PRODUCT CARD ─────────────────────────────────────────────── */
+.product-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.product-thumb-link {
+  height: 160px;
+  overflow: hidden;
+}
+.product-thumb-img {
+  height: 160px;
+  object-fit: contain;
+  background: #f8f9fa;
+}
+.product-thumb-fallback {
+  min-height: 160px;
+  height: 100%;
+  background: #f8f9fa;
+}
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.12) !important;
+}
+
+/* ── ORDER STATUS BADGE ───────────────────────────────────────── */
+.status-new     { background: #0d6efd !important; }
+.status-accepted { background: #0dcaf0 !important; color: #000 !important; }
+.status-shipping { background: #ffc107 !important; color: #000 !important; }
+.status-completed { background: #198754 !important; }
+.status-cancelled { background: #6c757d !important; }
+
+/* ── UTILITY ─────────────────────────────────────────────────── */
+.xsmall { font-size: 0.75rem !important; }
+@media (max-width: 575.98px) {
+  .page-content { padding: 1rem; }
+}

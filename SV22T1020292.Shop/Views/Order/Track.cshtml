@@ -1,0 +1,106 @@
+@model SV22T1020292.Models.Sales.OrderViewInfo
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Theo dõi đơn hàng";
+    var details = ViewBag.Details as IReadOnlyList<SV22T1020292.Models.Sales.OrderDetailViewInfo> ?? Array.Empty<SV22T1020292.Models.Sales.OrderDetailViewInfo>();
+    var hasOrder = Model?.OrderID > 0;
+}
+
+<div class="page-hd">
+    <h2>Theo dõi đơn hàng</h2>
+    <p>Nhập mã đơn để tra cứu</p>
+</div>
+
+<div class="section" style="padding-top:24px;">
+    <div class="shopvn-card" style="max-width:640px;margin-bottom:28px;">
+        <form asp-action="Track" method="get" class="filter-bar" style="margin:0;border:none;padding:0;background:transparent;">
+            <input type="number" name="orderId" placeholder="Mã đơn hàng (VD: 123)"
+                   value="@(hasOrder ? Model!.OrderID.ToString() : "")" style="flex:1;" />
+            <button type="submit" class="btn btn-gold btn-sm">Tra cứu</button>
+        </form>
+    </div>
+
+    @if (hasOrder)
+    {
+        var steps = new[] { ("Đặt hàng", Model!.OrderTime.ToString("dd/MM HH:mm"), true) };
+        var step2Done = Model.Status >= 2;
+        var step3Done = Model.Status >= 3;
+        var step4Done = Model.Status >= 4;
+        var isCancelled = Model.Status == -1 || Model.Status == -2;
+        var stepsAll = new[] {
+            ("Đặt hàng", Model.OrderTime.ToString("dd/MM HH:mm"), true, Model.Status >= 1),
+            ("Xác nhận", Model.AcceptTime?.ToString("dd/MM HH:mm") ?? "—", false, Model.Status >= 2),
+            ("Đang giao", Model.ShippedTime?.ToString("dd/MM HH:mm") ?? "—", false, Model.Status >= 3),
+            ("Hoàn tất", Model.FinishedTime?.ToString("dd/MM HH:mm") ?? "—", false, Model.Status >= 4)
+        };
+        var curIdx = Model.Status >= 1 && Model.Status <= 4 ? Model.Status - 1 : -1;
+
+        <div class="shopvn-alert @(isCancelled ? "danger" : "info")" style="margin-bottom:24px;">
+            <strong>Đơn #@Model.OrderID</strong> — @Model.StatusDescription
+        </div>
+
+        <div class="shopvn-card" style="margin-bottom:24px;">
+            <h3 style="font-family:var(--font-display);font-size:18px;margin:0 0 16px;">Tiến trình</h3>
+            <div class="timeline">
+                @for (int i = 0; i < stepsAll.Length; i++)
+                {
+                    var (lbl, tm, _, done) = stepsAll[i];
+                    var isDone = isCancelled ? false : done;
+                    var isCurr = !isCancelled && Model.Status == i + 1;
+                    <div class="tl-step @(isDone ? "done" : isCurr ? "curr" : "")">
+                        <div class="tl-dot">@(isDone ? "✓" : i + 1)</div>
+                        <div class="tl-label">@lbl</div>
+                    </div>
+                }
+            </div>
+            @if (isCancelled)
+            {
+                <div class="shopvn-alert danger" style="margin-top:16px;margin-bottom:0;">Đơn hàng đã bị hủy hoặc không tồn tại.</div>
+            }
+        </div>
+
+        <div class="shopvn-card" style="margin-bottom:24px;">
+            <h3 style="font-family:var(--font-display);font-size:18px;margin:0 0 12px;">Giao hàng</h3>
+            <p class="text2" style="margin:0;line-height:1.7;font-size:14px;">
+                @Model.DeliveryAddress, @Model.DeliveryProvince<br />
+                Người nhận: @(Model.CustomerName ?? "—") · @(Model.CustomerPhone ?? "")<br />
+                Tổng: <span class="gold" style="font-weight:600;">@Model.TotalAmount.ToString("N0")₫</span>
+                @if (!string.IsNullOrWhiteSpace(Model.ShipperName))
+                {
+                    <br /><span class="text-muted">Người giao: @Model.ShipperName</span>
+                }
+            </p>
+        </div>
+
+        @if (details.Any())
+        {
+            <div class="shopvn-card" style="padding:0;overflow:hidden;">
+                <table class="table-shopvn">
+                    <thead>
+                        <tr>
+                            <th>Mặt hàng</th>
+                            <th class="text-center">SL</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in details)
+                        {
+                            <tr>
+                                <td>@d.ProductName</td>
+                                <td class="text-center">@d.Quantity</td>
+                                <td class="text-end">@d.SalePrice.ToString("N0")₫</td>
+                                <td class="text-end gold">@((d.Quantity * d.SalePrice).ToString("N0"))₫</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    else if (Context.Request.Query.ContainsKey("orderId"))
+    {
+        <div class="shopvn-alert danger">Không tìm thấy đơn hàng với mã này.</div>
+    }
+</div>

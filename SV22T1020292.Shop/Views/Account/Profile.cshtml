@@ -1,0 +1,100 @@
+@model Customer
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Thông tin cá nhân";
+    var nameParts = Model.CustomerName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var initials = nameParts.Length >= 2
+        ? char.ToUpper(nameParts[0][0]).ToString() + char.ToUpper(nameParts[1][0]).ToString()
+        : nameParts.Length == 1
+            ? char.ToUpper(nameParts[0][0]).ToString()
+            : "?";
+}
+
+<div class="page-hd">
+    <h2>Tài khoản của tôi</h2>
+    <p>Cập nhật thông tin tài khoản</p>
+</div>
+
+<div class="profile-layout">
+    <div class="profile-side">
+        <div class="profile-avatar-lg">@initials</div>
+        <div class="profile-uname">@Model.CustomerName</div>
+        <div class="profile-email">@Model.Email</div>
+        <div class="side-menu">
+            <a class="side-item active" asp-controller="Account" asp-action="Profile"><span>✦</span> Thông tin cá nhân</a>
+            <a class="side-item" asp-controller="Account" asp-action="ChangePassword"><span>✦</span> Đổi mật khẩu</a>
+            <div class="side-sep"></div>
+            <a class="side-item" asp-controller="Order" asp-action="MyOrders"><span>✦</span> Đơn hàng</a>
+            <a class="side-item" asp-controller="Order" asp-action="PurchaseHistory"><span>◇</span> Lịch sử mua hàng</a>
+            <div class="side-sep"></div>
+            <a class="side-item danger" asp-controller="Account" asp-action="Logout"><span>✕</span> Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="profile-main">
+        <h3>Thông tin cá nhân</h3>
+        <form asp-action="Profile" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="field">
+                <label>Mã khách hàng</label>
+                <input type="text" value="#@Model.CustomerID" readonly />
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label for="customerName">Tên khách hàng <span class="text-danger">*</span></label>
+                    <input type="text" id="customerName" name="CustomerName" value="@Model.CustomerName" required />
+                    @Html.ValidationMessage("CustomerName", new { @class = "text-danger" })
+                </div>
+                <div class="field">
+                    <label for="contactName">Tên giao dịch</label>
+                    <input type="text" id="contactName" name="ContactName" value="@Model.ContactName" />
+                </div>
+                <div class="field">
+                    <label for="email">Email <span class="text-danger">*</span></label>
+                    <input type="email" id="email" name="Email" value="@Model.Email" required />
+                    @Html.ValidationMessage("Email", new { @class = "text-danger" })
+                </div>
+                <div class="field">
+                    <label for="phone">Điện thoại</label>
+                    <input type="text" id="phone" name="Phone" value="@Model.Phone" />
+                </div>
+                <div class="field">
+                    <label for="province">Tỉnh / Thành</label>
+                    <select id="province" name="Province">
+                        <option value="">— Chọn —</option>
+                        @if (ViewBag.Provinces is IEnumerable<Province> provinces)
+                        {
+                            foreach (var p in provinces)
+                            {
+                                if (Model.Province == p.ProvinceName)
+                                {
+                                    <option value="@p.ProvinceName" selected="selected">@p.ProvinceName</option>
+                                }
+                                else
+                                {
+                                    <option value="@p.ProvinceName">@p.ProvinceName</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="field form-full">
+                    <label for="address">Địa chỉ</label>
+                    <input type="text" id="address" name="Address" value="@Model.Address" placeholder="Số nhà, đường..." />
+                </div>
+            </div>
+
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="shopvn-alert danger">@Html.ValidationSummary(false)</div>
+            }
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
+                <button type="submit" class="btn btn-gold">Lưu thông tin</button>
+                <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-outline btn-sm">Đổi mật khẩu</a>
+            </div>
+        </form>
+    </div>
+</div>

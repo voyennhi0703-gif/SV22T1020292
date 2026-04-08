@@ -1,0 +1,28 @@
+﻿@model (string DisplayName, string Photo)
+@{
+    var defaultAvatar = Url.Content("~/img/avatar-default.svg");
+    var fileName = string.IsNullOrWhiteSpace(Model.Photo)
+        ? null
+        : System.IO.Path.GetFileName(Model.Photo.Trim());
+    var photoSrc = string.IsNullOrEmpty(fileName)
+        ? defaultAvatar
+        : Url.Content($"~/images/employees/{fileName}");
+}
+<li class="nav-item dropdown user-menu">
+    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+        <img src="@photoSrc" class="user-image rounded-circle shadow" alt="" width="32" height="32"
+             onerror="this.onerror=null;this.src='@defaultAvatar';" />
+        <span class="d-none d-md-inline">@Model.DisplayName</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+        <li class="user-header text-bg-primary">
+            <img src="@photoSrc" class="rounded-circle shadow" alt="" width="90" height="90"
+                 onerror="this.onerror=null;this.src='@defaultAvatar';" />
+            <p>@Model.DisplayName</p>
+        </li>
+        <li class="user-footer">
+            <a href="~/Account/ChangePassword" class="btn btn-default btn-flat">Đổi mật khẩu</a>
+            <a href="~/Account/Logout" class="btn btn-default btn-flat float-end">Thoát</a>
+        </li>
+    </ul>
+</li>

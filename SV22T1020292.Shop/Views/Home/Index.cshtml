@@ -1,0 +1,159 @@
+@model PagedResult<Product>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Trang chủ";
+    var cats = ViewBag.Categories as IEnumerable<Category> ?? Enumerable.Empty<Category>();
+    var products = Model?.DataItems?.ToList() ?? new List<Product>();
+    var heroFeatured = products.Take(12).ToList();
+    var boxPlaceholder = Url.Content("~/images/shop/placeholder-box.svg");
+    var totalProducts = Model?.RowCount ?? 0;
+}
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-left">
+        <div class="hero-tag">Siêu thị trực tuyến 2025</div>
+        <div class="hero-title">
+            Mua sắm
+            <em>thật dễ dàng</em>
+        </div>
+        <p class="hero-desc">Nội thất, điện tử, thời trang và hàng ngàn sản phẩm chính hãng — giao hàng toàn quốc, đổi trả linh hoạt.</p>
+        <div class="hero-cta">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-gold">Khám phá sản phẩm</a>
+        </div>
+        <div class="hero-stats">
+            <div>
+                <div class="stat-num">@totalProducts.ToString("N0")+</div>
+                <div class="stat-lbl">Sản phẩm</div>
+            </div>
+            <div>
+                <div class="stat-num">98%</div>
+                <div class="stat-lbl">Hải lớng</div>
+            </div>
+            <div>
+                <div class="stat-num">500+</div>
+                <div class="stat-lbl">Thương hiệu</div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-right">
+        <div class="hero-featured-head">
+            <div class="section-title hero-featured-title">Sản phẩm</div>
+            <p class="section-sub hero-featured-sub">Tìm kiếm và lọc theo loại, nhà cung cấp, khoảng giá</p>
+            <a asp-controller="Product" asp-action="Index" class="hero-featured-cta">Xem danh sách đầy đủ →</a>
+        </div>
+        <div class="hero-carousel-outer">
+            <button type="button" class="hero-carousel-btn hero-carousel-prev" aria-label="Sản phẩm trước">&#8249;</button>
+            <div class="hero-carousel-viewport">
+                <div class="hero-carousel" id="heroFeaturedCarousel">
+                    @if (heroFeatured.Any())
+                    {
+                        foreach (var p in heroFeatured)
+                        {
+                            <div class="hero-carousel-slide">
+                                <a class="hero-product-card" asp-controller="Product" asp-action="Detail" asp-route-id="@p.ProductID">
+                                    <div class="hero-prod-icon">
+                                        <img src="@boxPlaceholder" alt="" width="120" height="120" />
+                                    </div>
+                                    <div class="hero-prod-info">
+                                        <div class="hero-prod-cat">@p.Unit</div>
+                                        <div class="hero-prod-name">@p.ProductName</div>
+                                        <div class="hero-prod-price">@p.Price.ToString("N0") đ</div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="hero-carousel-slide">
+                            <div class="hero-product-card hero-product-card--empty">
+                                <div class="hero-prod-icon"><img src="@boxPlaceholder" alt="" width="120" height="120" /></div>
+                                <div class="hero-prod-info">
+                                    <div class="hero-prod-cat">BloomShop</div>
+                                    <div class="hero-prod-name">Chưa có sản phẩm trên trang này</div>
+                                    <div class="hero-prod-price">Không có</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <button type="button" class="hero-carousel-btn hero-carousel-next" aria-label="Sản phẩm sau">&#8250;</button>
+        </div>
+        <div class="hero-carousel-dots" id="heroFeaturedDots" role="tablist" aria-label="Chọn sản phẩm"></div>
+    </div>
+</div>
+
+<!-- DANH MỤC -->
+<div class="section" style="background:var(--white);border-top:1px solid var(--border);padding-bottom:40px" id="categories">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Danh mục <em>hàng hoá</em></div>
+            <div class="section-sub">Duyệt qua @(cats.Count()) ngành hàng đa dạng</div>
+        </div>
+        <a asp-controller="Product" asp-action="Index" class="btn btn-ghost">Tất cả sản phẩm</a>
+    </div>
+    <div class="cat-scroll-wrap">
+        <a class="cat-pill" asp-controller="Product" asp-action="Index">
+            <span class="cat-icon cat-icon--img-wrap"><img class="cat-icon-img" src="@boxPlaceholder" alt="" /></span>
+            <div class="cat-name">Tất cả</div>
+            <div class="cat-count">@totalProducts.ToString("N0") sản phẩm</div>
+        </a>
+        @foreach (var c in cats)
+        {
+            <a class="cat-pill" asp-controller="Product" asp-action="Index" asp-route-categoryID="@c.CategoryID">
+                <span class="cat-icon cat-icon--img-wrap"><img class="cat-icon-img" src="@boxPlaceholder" alt="" /></span>
+                <div class="cat-name">@c.CategoryName</div>
+            </a>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    (function () {
+        var el = document.getElementById('heroFeaturedCarousel');
+        var dotsWrap = document.getElementById('heroFeaturedDots');
+        if (!el || !dotsWrap) return;
+        var slides = el.querySelectorAll('.hero-carousel-slide');
+        var prev = document.querySelector('.hero-carousel-prev');
+        var next = document.querySelector('.hero-carousel-next');
+        if (slides.length === 0) return;
+        function step() { return el.clientWidth || 1; }
+        function currentIndex() {
+            var w = step();
+            return Math.round(el.scrollLeft / w);
+        }
+        function goTo(i) {
+            var w = step();
+            el.scrollTo({ left: i * w, behavior: 'smooth' });
+        }
+        slides.forEach(function (_, i) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'hero-carousel-dot' + (i === 0 ? ' active' : '');
+            b.setAttribute('aria-label', 'Sản phẩm ' + (i + 1));
+            b.addEventListener('click', function () { goTo(i); });
+            dotsWrap.appendChild(b);
+        });
+        function updateDots() {
+            var idx = Math.min(Math.max(0, currentIndex()), slides.length - 1);
+            dotsWrap.querySelectorAll('.hero-carousel-dot').forEach(function (d, i) {
+                d.classList.toggle('active', i === idx);
+            });
+            if (prev) prev.disabled = idx <= 0;
+            if (next) next.disabled = idx >= slides.length - 1;
+        }
+        var scrollT;
+        el.addEventListener('scroll', function () {
+            clearTimeout(scrollT);
+            scrollT = setTimeout(updateDots, 50);
+        }, { passive: true });
+        if (prev) prev.addEventListener('click', function () { goTo(Math.max(0, currentIndex() - 1)); });
+        if (next) next.addEventListener('click', function () { goTo(Math.min(slides.length - 1, currentIndex() + 1)); });
+        window.addEventListener('resize', function () { updateDots(); });
+        updateDots();
+    })();
+</script>
+}

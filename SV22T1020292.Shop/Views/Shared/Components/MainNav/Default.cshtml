@@ -1,0 +1,12 @@
+@model IReadOnlyList<SV22T1020292.Models.Catalog.Category>
+@{
+    var q = ViewContext.HttpContext.Request.Query["categoryID"].ToString();
+    int? activeId = int.TryParse(q, out var cid) ? cid : null;
+    var onProduct = string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Product", System.StringComparison.OrdinalIgnoreCase);
+}
+<a class="nav-link @(onProduct && activeId == null ? "active" : null)" asp-controller="Product" asp-action="Index">Tất cả</a>
+@foreach (var c in Model)
+{
+    <a class="nav-link @(activeId == c.CategoryID ? "active" : null)"
+       asp-controller="Product" asp-action="Index" asp-route-categoryID="@c.CategoryID">@c.CategoryName</a>
+}

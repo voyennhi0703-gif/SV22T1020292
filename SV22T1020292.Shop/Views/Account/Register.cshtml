@@ -1,0 +1,90 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký | BloomShop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/shopvn.css" asp-append-version="true" />
+</head>
+<body class="shopvn-body">
+<div class="auth-wrap">
+    <div class="auth-card" style="max-width:520px;">
+        <a class="auth-logo" asp-controller="Home" asp-action="Index">BloomShop</a>
+        <div class="auth-tagline">THAM GIA CỘNG ĐỒNG MUA SẮM</div>
+        <div class="auth-title">Tạo tài khoản</div>
+        <div class="auth-sub">Điền thông tin bên dưới để bắt đầu</div>
+
+        <form asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="form-grid">
+                <div class="field">
+                    <label for="customerName">Tên khách hàng <span class="text-danger">*</span></label>
+                    <input type="text" id="customerName" name="customerName" placeholder="VD: Nguyễn Thị Lan Anh" required />
+                    @Html.ValidationMessage("customerName", new { @class = "text-danger" })
+                </div>
+                <div class="field">
+                    <label for="contactName">Tên giao dịch <span class="text-danger">*</span></label>
+                    <input type="text" id="contactName" name="contactName" placeholder="VD: Shop ABC" required />
+                    @Html.ValidationMessage("contactName", new { @class = "text-danger" })
+                </div>
+                <div class="field form-full">
+                    <label for="email">Email <span class="text-danger">*</span></label>
+                    <input type="email" id="email" name="email" placeholder="email@example.com" required />
+                    @Html.ValidationMessage("email", new { @class = "text-danger" })
+                </div>
+                <div class="field">
+                    <label for="password">Mật khẩu <span class="text-danger">*</span></label>
+                    <input type="password" id="password" name="password" placeholder="Tối thiểu 6 ký tự" required minlength="6" />
+                    @Html.ValidationMessage("password", new { @class = "text-danger" })
+                </div>
+                <div class="field">
+                    <label for="confirmPassword">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required />
+                    @Html.ValidationMessage("confirmPassword", new { @class = "text-danger" })
+                </div>
+                <div class="field">
+                    <label for="phone">Điện thoại</label>
+                    <input type="text" id="phone" name="phone" placeholder="0xxx xxx xxx" />
+                </div>
+                <div class="field">
+                    <label for="province">Tỉnh / Thành</label>
+                    <select id="province" name="province">
+                        <option value="">— Chọn —</option>
+                        @if (ViewBag.Provinces is IEnumerable<Province> provinces)
+                        {
+                            foreach (var p in provinces)
+                            {
+                                <option value="@p.ProvinceName">@p.ProvinceName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="field form-full">
+                    <label for="address">Địa chỉ</label>
+                    <input type="text" id="address" name="address" placeholder="Số nhà, đường..." />
+                </div>
+            </div>
+
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="shopvn-alert danger">@Html.ValidationSummary(false)</div>
+            }
+
+            <button type="submit" class="btn btn-gold btn-full" style="margin-top:16px;">Tạo tài khoản</button>
+        </form>
+
+        <p class="auth-footer" style="margin-top:20px;">
+            Đã có tài khoản?
+            <a asp-action="Login" style="color:var(--rose);font-weight:700;">Đăng nhập →</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

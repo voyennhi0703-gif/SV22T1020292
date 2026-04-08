@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true">
+  <defs>
+    <linearGradient id="boxTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8d4c4"/>
+      <stop offset="100%" stop-color="#c9a88a"/>
+    </linearGradient>
+    <linearGradient id="boxSide" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d4b89a"/>
+      <stop offset="100%" stop-color="#a08068"/>
+    </linearGradient>
+    <linearGradient id="boxFront" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c9a88a"/>
+      <stop offset="100%" stop-color="#8f6b52"/>
+    </linearGradient>
+  </defs>
+  <!-- Isometric cardboard box -->
+  <path fill="url(#boxTop)" d="M64 18 L108 42 L64 66 L20 42 Z"/>
+  <path fill="url(#boxSide)" d="M108 42 L108 82 L64 106 L64 66 Z"/>
+  <path fill="url(#boxFront)" d="M20 42 L64 66 L64 106 L20 82 Z"/>
+  <path fill="#7a5a45" opacity="0.35" d="M38 48 L86 48 L64 60 Z"/>
+  <rect x="28" y="68" width="22" height="14" rx="2" fill="#f5f0eb" opacity="0.9"/>
+</svg>

@@ -1,0 +1,173 @@
+@model Product
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.ProductName;
+    var related = ViewBag.RelatedProducts as List<Product> ?? new();
+    var cats = ViewBag.Categories as IEnumerable<Category> ?? Enumerable.Empty<Category>();
+    var categoryName = ViewBag.CategoryName as string ?? "";
+    var boxPlaceholder = Url.Content("~/images/shop/placeholder-box.svg");
+}
+
+<div class="page-hd">
+    <div class="breadcrumb">
+        <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+        <span>›</span>
+        <a asp-controller="Product" asp-action="Index">Mặt hàng</a>
+        <span>›</span>
+        @if (!string.IsNullOrEmpty(categoryName))
+        {
+            <a asp-controller="Product" asp-action="Index" asp-route-categoryID="@Model.CategoryID">@categoryName</a>
+            <span>›</span>
+        }
+        <span>@Model.ProductName</span>
+    </div>
+    <a asp-controller="Product" asp-action="Index" class="back-link">← Tiếp tục mua sắm</a>
+    <h2>Chi tiết sản phẩm</h2>
+</div>
+
+<div class="detail-layout">
+    <div class="detail-gallery">
+        <div class="detail-main-img">
+            <img src="@boxPlaceholder" alt="" />
+        </div>
+    </div>
+    <div>
+        <div class="detail-brand">@Model.Unit</div>
+        <h1 class="detail-name">@Model.ProductName</h1>
+        <div class="detail-rating">
+            <span style="color:var(--rose);font-size:16px;">★★★★★</span>
+            <span class="text2" style="font-size:14px;">5.0 · 0 đánh giá</span>
+            @if (Model.IsSelling)
+            {
+                <span style="font-size:12px;color:var(--success);">● Còn hàng</span>
+            }
+            else
+            {
+                <span style="font-size:12px;color:var(--danger);">● Ngừng bán</span>
+            }
+        </div>
+        <div class="detail-price">
+            <span class="new">@Model.Price.ToString("N0") đ</span>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Model.ProductDescription))
+        {
+            <div class="detail-desc">@Model.ProductDescription</div>
+        }
+        <div class="qty-row">
+            <span class="qty-label">Số lượng</span>
+            <div class="qty-ctrl">
+                <button type="button" id="qtyMinus" aria-label="Giảm">−</button>
+                <input type="number" id="quantity" value="1" min="1" max="999" />
+                <button type="button" id="qtyPlus" aria-label="Tăng">+</button>
+            </div>
+        </div>
+        <div class="detail-btns">
+            @if (Model.IsSelling)
+            {
+                <button type="button" class="btn btn-gold" onclick="addToCartDetail()">+ Thêm vào giỏ hàng</button>
+                <a asp-controller="Cart" asp-action="Add" asp-route-productId="@Model.ProductID" asp-route-quantity="1" class="btn btn-outline">⚡ Mua ngay</a>
+            }
+            else
+            {
+                <button type="button" class="btn btn-gold" disabled style="opacity:0.5;cursor:not-allowed;">Ngừng bán</button>
+            }
+        </div>
+        <div class="detail-meta">
+            <div class="meta-row"><span class="k">Đơn vị</span><span class="v">@Model.Unit</span></div>
+            <div class="meta-row"><span class="k">Loại hàng</span><span class="v">@categoryName</span></div>
+            <div class="meta-row"><span class="k">Tình trạng</span><span class="v" style="color:var(--success)">@(Model.IsSelling ? "Còn hàng" : "Ngừng bán")</span></div>
+            <div class="meta-row"><span class="k">Bảo hành</span><span class="v">Đổi trả 30 ngày</span></div>
+            <div class="meta-row"><span class="k">Vận chuyển</span><span class="v">Miễn phí từ 500K</span></div>
+        </div>
+    </div>
+</div>
+
+@* ── Sản phẩm liên quan ─────────────────────────────────────── *@
+@if (related.Any())
+{
+    <div class="section" style="margin-top:48px;">
+        <div class="section-header">
+            <div>
+                <div class="section-title">Sản phẩm <em>liên quan</em></div>
+                <div class="section-sub">Cùng loại — @categoryName</div>
+            </div>
+            <a asp-controller="Product" asp-action="Index" asp-route-categoryID="@Model.CategoryID" class="btn btn-ghost btn-sm">
+                Xem tất cả →
+            </a>
+        </div>
+        <div class="prod-grid" style="--prod-cols:4;">
+            @foreach (var p in related)
+            {
+                <div class="prod-card">
+                    <a asp-action="Detail" asp-route-id="@p.ProductID" class="prod-img">
+                        <img src="@boxPlaceholder" alt="" loading="lazy" decoding="async" />
+                    </a>
+                    <div class="prod-body">
+                        <div class="prod-brand">@p.Unit</div>
+                        <a asp-action="Detail" asp-route-id="@p.ProductID" class="prod-name">@p.ProductName</a>
+                        <div class="prod-price">
+                            <span class="new">@p.Price.ToString("N0")₫</span>
+                        </div>
+                        @if (p.IsSelling)
+                        {
+                            <button type="button" class="btn-addcart" onclick="addToCart(@p.ProductID)">+ Thêm vào giỏ</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn-addcart" disabled style="opacity:0.5;cursor:not-allowed;">Ngừng bán</button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+    (function () {
+        var q = document.getElementById('quantity');
+        document.getElementById('qtyMinus')?.addEventListener('click', function () {
+            var v = Math.max(1, (parseInt(q.value, 10) || 1) - 1);
+            q.value = v;
+        });
+        document.getElementById('qtyPlus')?.addEventListener('click', function () {
+            var v = Math.min(999, (parseInt(q.value, 10) || 1) + 1);
+            q.value = v;
+        });
+    })();
+    function addToCartDetail() {
+        var qty = parseInt(document.getElementById('quantity').value, 10) || 1;
+        if (qty < 1) qty = 1;
+        addToCartCore('@Model.ProductID', qty);
+    }
+    function addToCart(productId, quantity) {
+        addToCartCore(productId, quantity || 1);
+    }
+    function addToCartCore(productId, quantity) {
+        fetch('@Url.Action("AddToCart", "Cart")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'productID=' + productId + '&quantity=' + quantity
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                var badge = document.getElementById('cartBadge');
+                if (badge) {
+                    badge.textContent = data.count;
+                    badge.classList.toggle('hidden', data.count === 0);
+                }
+                if (window.showToast) {
+                    showToast('Đã thêm vào giỏ hàng ✦', 'ok');
+                } else {
+                    alert('Đã thêm vào giỏ hàng!');
+                }
+            } else {
+                alert(data.message || 'Có lỗi xảy ra.');
+            }
+        })
+        .catch(() => alert('Có lỗi kết nối.'));
+    }
+</script>
+}

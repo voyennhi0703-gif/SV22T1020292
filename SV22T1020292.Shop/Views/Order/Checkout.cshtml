@@ -1,0 +1,130 @@
+@model Customer
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Thanh toán";
+    var cart = ViewBag.Cart as List<OrderDetailViewInfo> ?? new();
+    var cartTotal = ViewBag.CartTotal as decimal? ?? 0;
+    var shipping = cartTotal >= 500000m ? 0m : 30000m;
+}
+
+<div class="page-hd">
+    <a asp-controller="Cart" asp-action="Index" class="back-link">← Quay lại giỏ hàng</a>
+    <h2>Thanh toán</h2>
+    <p>Xác nhận địa chỉ giao hàng</p>
+</div>
+
+<div class="checkout-layout">
+    <div>
+        <div class="step-indicator">
+            <div class="step done"><div class="step-dot2">✓</div><span>Giỏ hàng</span></div>
+            <div class="step-line"></div>
+            <div class="step active"><div class="step-dot2">2</div><span>Thông tin</span></div>
+            <div class="step-line"></div>
+            <div class="step"><div class="step-dot2">3</div><span>Thanh toán</span></div>
+            <div class="step-line"></div>
+            <div class="step"><div class="step-dot2">4</div><span>Hoàn thành</span></div>
+        </div>
+
+        <div class="shopvn-card" style="margin-bottom:20px;">
+            <h3 style="font-family:var(--font-display);font-size:22px;margin:0 0 20px;">📍 Địa chỉ giao hàng</h3>
+            <form asp-action="Checkout" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Tên khách hàng</label>
+                        <input type="text" value="@Model.CustomerName" readonly />
+                    </div>
+                    <div class="field">
+                        <label>Email</label>
+                        <input type="email" value="@Model.Email" readonly />
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Phone))
+                    {
+                        <div class="field form-full">
+                            <label>Điện thoại</label>
+                            <input type="text" value="@Model.Phone" readonly />
+                        </div>
+                    }
+                    <div class="field form-full">
+                        <label for="deliveryProvince">Tỉnh / Thành phố giao hàng <span class="text-danger">*</span></label>
+                        <select id="deliveryProvince" name="deliveryProvince" required>
+                            <option value="">— Chọn tỉnh/thành —</option>
+                            @if (ViewBag.Provinces is IEnumerable<Province> provinces)
+                            {
+                                foreach (var p in provinces)
+                                {
+                                    var isSelected = !string.IsNullOrEmpty(Model.Province) && Model.Province == p.ProvinceName;
+                                    if (isSelected)
+                                    {
+                                        <option value="@p.ProvinceName" selected="selected">@p.ProvinceName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@p.ProvinceName">@p.ProvinceName</option>
+                                    }
+                                }
+                            }
+                        </select>
+                        @Html.ValidationMessage("deliveryProvince", new { @class = "text-danger" })
+                    </div>
+                    <div class="field form-full">
+                        <label for="deliveryAddress">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                        <textarea id="deliveryAddress" name="deliveryAddress" rows="3" required
+                                  placeholder="Số nhà, đường, phường/xã...">@Model.Address</textarea>
+                        @Html.ValidationMessage("deliveryAddress", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @if (ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="shopvn-alert danger" style="margin-top:8px;">@Html.ValidationSummary(false)</div>
+                }
+
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;">
+                    <a asp-controller="Cart" asp-action="Index" class="btn btn-outline btn-sm">← Giỏ hàng</a>
+                    <button type="submit" class="btn btn-gold" style="flex:1;min-width:200px;">✓ Xác nhận đặt hàng</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="shopvn-card">
+            <h3 style="font-family:var(--font-display);font-size:19px;margin:0 0 18px;">💳 Phương thức thanh toán</h3>
+            <div class="pay-opts">
+                <div class="pay-opt selected" onclick="selPay(this)"><span>💵</span> Tiền mặt khi nhận</div>
+                <div class="pay-opt" onclick="selPay(this)"><span>🏦</span> Chuyển khoản</div>
+                <div class="pay-opt" onclick="selPay(this)"><span>💳</span> Thẻ tín dụng</div>
+                <div class="pay-opt" onclick="selPay(this)"><span>📱</span> Ví MoMo / ZaloPay</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-box">
+        <h3>Đơn hàng của bạn</h3>
+        <div style="max-height:280px;overflow-y:auto;margin-bottom:16px;">
+            @foreach (var item in cart)
+            {
+                <div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                    <span style="font-size:22px;">📦</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:13px;font-weight:500;">@item.ProductName</div>
+                        <div class="text-muted" style="font-size:11px;">x@item.Quantity · @item.SalePrice.ToString("N0")₫</div>
+                    </div>
+                    <div style="font-weight:600;color:var(--rose);white-space:nowrap;">@((item.Quantity * item.SalePrice).ToString("N0"))₫</div>
+                </div>
+            }
+        </div>
+        <div class="sum-row"><span class="text2">Tạm tính</span><span>@cartTotal.ToString("N0")₫</span></div>
+        <div class="sum-row"><span class="text2">Vận chuyển</span><span>@(shipping == 0 ? "Miễn phí" : shipping.ToString("N0") + "₫")</span></div>
+        <div class="sum-row total"><span>Tổng cộng</span><span>@((cartTotal + shipping).ToString("N0"))₫</span></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function selPay(el) {
+        document.querySelectorAll('.pay-opt').forEach(function(o) { o.classList.remove('selected'); });
+        el.classList.add('selected');
+    }
+</script>
+}
